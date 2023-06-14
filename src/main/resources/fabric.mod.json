@@ -1,0 +1,36 @@
+{
+  "schemaVersion": 1,
+  "id": "pickupme",
+  "version": "${version}",
+
+  "name": "Pick Up Me Please!",
+  "description": "You can now pick up other players.",
+  "authors": [
+    "ForwarD NerN"
+  ],
+  "contact": {
+  },
+
+  "license": "CC0-1.0",
+  "icon": "assets/pickupme/icon.png",
+
+  "environment": "*",
+  "entrypoints": {
+    "main": [
+      "ru.nern.pickupme.PickUpMe"
+    ]
+  },
+  "mixins": [
+    "pickupme.mixins.json"
+  ],
+  "depends": {
+    "fabric": "*",
+    "minecraft": ">=1.19.4"
+  },
+  "suggests": {
+    "another-mod": "*"
+  },
+  "breaks": {
+    "playerladder": "*"
+  }
+}
