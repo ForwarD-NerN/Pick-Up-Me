@@ -9,6 +9,7 @@ import net.minecraft.network.packet.s2c.play.EntityPassengersSetS2CPacket;
 import net.minecraft.server.network.ServerPlayerEntity;
 import net.minecraft.world.World;
 import org.spongepowered.asm.mixin.Shadow;
+import org.spongepowered.asm.mixin.injection.ModifyVariable;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.injection.At;
@@ -36,30 +37,15 @@ public abstract class EntityMixin
 			((ServerPlayerEntity)entity).networkHandler.sendPacket(new EntityPassengersSetS2CPacket(entity));
 	}
 
-	@Inject(method = "updatePassengerPosition(Lnet/minecraft/entity/Entity;Lnet/minecraft/entity/Entity$PositionUpdater;)V", at = @At("HEAD"), cancellable = true)
-	private void updatePassengerPosition(Entity passenger, Entity.PositionUpdater positionUpdater, CallbackInfo ci) {
-		ci.cancel();
-		Entity entity = (Entity) (Object) this;
-		if (!entity.hasPassenger(passenger)) return;
-
-		double d = entity.getY() + entity.getMountedHeightOffset() + passenger.getHeightOffset();
-
-		if(getWorld().isClient)
-			d = getOffset(passenger, entity);
-
-
-		positionUpdater.accept(passenger, entity.getX(), d, entity.getZ());
+	@ModifyVariable(method = "updatePassengerPosition(Lnet/minecraft/entity/Entity;Lnet/minecraft/entity/Entity$PositionUpdater;)V",
+			at = @At(value = "STORE"), ordinal = 0, require = 0)
+	private double offsetPassengersClientSide(double d, Entity passenger) {
+		return getWorld().isClient && passenger instanceof PlayerEntity ? d-getRidingOffset(passenger) : d;
 	}
-
 	@Environment(EnvType.CLIENT)
-	private double getOffset(Entity passenger, Entity vehicle)
+	private double getRidingOffset(Entity passenger)
 	{
 		MinecraftClient mc = MinecraftClient.getInstance();
-		if(mc.options.getPerspective().isFirstPerson() && passenger instanceof PlayerEntity && passenger.getVehicle() == mc.player)
-			return vehicle.getY() + vehicle.getMountedHeightOffset();
-
-		return vehicle.getY() + vehicle.getMountedHeightOffset() + passenger.getHeightOffset();
+		return mc.options.getPerspective().isFirstPerson() && passenger.getVehicle() == mc.player ? passenger.getHeightOffset() : 0;
 	}
-
-
 }
