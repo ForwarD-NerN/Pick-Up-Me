@@ -50,5 +50,4 @@ public abstract class EntityMixin
 		return mc.options.getPerspective().isFirstPerson() && passenger.getVehicle() == mc.player ? passenger.getHeightOffset() : 0;
 	}
 
-
 }
